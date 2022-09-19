@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+
+  database:
+    image: mongo
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+
+  user:
+    container_name: user-api
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
