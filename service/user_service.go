@@ -23,20 +23,20 @@ func NewUserService(userRepository repository.UserRepositoryInterface) *UserServ
 type UserServiceInterface interface {
 	Create(*gin.Context, model.CreateUserDomainModel) (*model.UserDomainModel, error)
 	GetById(*gin.Context, string) (*model.UserDomainModel, error)
-	GetAll(*gin.Context) ([]*model.UserViewModel, error)
+	GetAll(*gin.Context) ([]*model.UserDomainModel, error)
 	DeleteById(*gin.Context, string) error
-	UpdateById(*gin.Context, string, model.UpdateUserDomainModel) (*model.UserViewModel, error)
+	UpdateById(*gin.Context, string, model.UpdateUserDomainModel) (*model.UserDomainModel, error)
 }
 
-func (s *UserService) Create(ctx *gin.Context, createModel model.CreateUserDomainModel) (*model.UserDomainModel, error) {
-	isEmailInUse, err := s.userRepository.CheckIfEmailAlreadyInUse(ctx, createModel.Email)
+func (s *UserService) Create(ctx *gin.Context, createDomainModel model.CreateUserDomainModel) (*model.UserDomainModel, error) {
+	isEmailInUse, err := s.userRepository.CheckIfEmailAlreadyInUse(ctx, createDomainModel.Email)
 	if isEmailInUse {
 		return nil, errs.EmailAlreadyInUseError
 	} else if err != nil {
 		return nil, err
 	}
 
-	hashedPasswordInBytes, err := bcrypt.GenerateFromPassword([]byte(createModel.Password), bcrypt.MinCost)
+	hashedPasswordInBytes, err := bcrypt.GenerateFromPassword([]byte(createDomainModel.Password), bcrypt.MinCost)
 	if err != nil {
 		log.Println(err)
 		return nil, errs.ServerError
@@ -44,8 +44,8 @@ func (s *UserService) Create(ctx *gin.Context, createModel model.CreateUserDomai
 
 	entity := model.UserEntity{
 		Id:       primitive.NewObjectID(),
-		Name:     createModel.Name,
-		Email:    createModel.Email,
+		Name:     createDomainModel.Name,
+		Email:    createDomainModel.Email,
 		Password: string(hashedPasswordInBytes),
 	}
 
@@ -54,13 +54,13 @@ func (s *UserService) Create(ctx *gin.Context, createModel model.CreateUserDomai
 		return nil, err
 	}
 
-	user := model.UserDomainModel{
+	domainModel := model.UserDomainModel{
 		Id:    entity.Id.Hex(),
 		Email: entity.Email,
 		Name:  entity.Name,
 	}
 
-	return &user, nil
+	return &domainModel, nil
 }
 
 func (s *UserService) GetById(ctx *gin.Context, id string) (user *model.UserDomainModel, err error) {
@@ -84,7 +84,7 @@ func (s *UserService) GetById(ctx *gin.Context, id string) (user *model.UserDoma
 	return
 }
 
-func (s *UserService) GetAll(ctx *gin.Context) (userViews []*model.UserViewModel, err error) {
+func (s *UserService) GetAll(ctx *gin.Context) (userViews []*model.UserDomainModel, err error) {
 	userEntities, err := s.userRepository.GetAll(ctx)
 	if err != nil {
 		return nil, err
@@ -95,13 +95,13 @@ func (s *UserService) GetAll(ctx *gin.Context) (userViews []*model.UserViewModel
 	}
 
 	for i := 0; i < len(userEntities); i++ {
-		var userView model.UserViewModel
+		var domainModel model.UserDomainModel
 
-		userView.Id = userEntities[i].Id.Hex()
-		userView.Name = userEntities[i].Name
-		userView.Email = userEntities[i].Email
+		domainModel.Id = userEntities[i].Id.Hex()
+		domainModel.Name = userEntities[i].Name
+		domainModel.Email = userEntities[i].Email
 
-		userViews = append(userViews, &userView)
+		userViews = append(userViews, &domainModel)
 	}
 
 	return
@@ -122,15 +122,15 @@ func (s *UserService) DeleteById(ctx *gin.Context, id string) error {
 	return nil
 }
 
-func (s *UserService) UpdateById(ctx *gin.Context, id string, updateModel model.UpdateUserDomainModel) (*model.UserViewModel, error) {
+func (s *UserService) UpdateById(ctx *gin.Context, id string, updateDomainModel model.UpdateUserDomainModel) (*model.UserDomainModel, error) {
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		log.Println(err)
 		return nil, errs.BadRequestError
 	}
 
-	if updateModel.Email != nil {
-		isEmailInUse, err := s.userRepository.CheckIfEmailAlreadyInUse(ctx, *(updateModel.Email))
+	if updateDomainModel.Email != nil {
+		isEmailInUse, err := s.userRepository.CheckIfEmailAlreadyInUse(ctx, *(updateDomainModel.Email))
 		if isEmailInUse {
 			return nil, errs.EmailAlreadyInUseError
 		} else if err != nil {
@@ -138,27 +138,27 @@ func (s *UserService) UpdateById(ctx *gin.Context, id string, updateModel model.
 		}
 	}
 
-	if updateModel.Password != nil {
-		hashedPasswordInBytes, err := bcrypt.GenerateFromPassword([]byte(*updateModel.Password), bcrypt.MinCost)
+	if updateDomainModel.Password != nil {
+		hashedPasswordInBytes, err := bcrypt.GenerateFromPassword([]byte(*updateDomainModel.Password), bcrypt.MinCost)
 		if err != nil {
 			log.Println(err)
 			return nil, errs.ServerError
 		}
 
 		var password = string(hashedPasswordInBytes)
-		updateModel.Password = &password
+		updateDomainModel.Password = &password
 	}
 
-	userEntity, err := s.userRepository.UpdateById(ctx, objectId, updateModel)
+	userEntity, err := s.userRepository.UpdateById(ctx, objectId, updateDomainModel)
 	if err != nil {
 		return nil, err
 	}
 
-	uv := &model.UserViewModel{
+	domainModel := &model.UserDomainModel{
 		Id:    userEntity.Id.Hex(),
 		Name:  userEntity.Name,
 		Email: userEntity.Email,
 	}
 
-	return uv, nil
+	return domainModel, nil
 }
