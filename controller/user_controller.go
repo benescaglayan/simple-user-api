@@ -39,13 +39,13 @@ func (c *UserController) Create(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&createUserRequest)
 	if err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, map[string]interface{}{"error": "Bad request"})
+		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": "Bad request"})
 		return
 	}
 
 	err = c.validator.Struct(createUserRequest)
 	if err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -64,7 +64,7 @@ func (c *UserController) Create(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, user)
 }
 
-func (c *UserController) GetUsers(ctx *gin.Context) {
+func (c *UserController) GetAll(ctx *gin.Context) {
 	users, err := c.userService.GetAll(ctx)
 	if err != nil {
 		configureErrorResponse(ctx, err)
@@ -93,13 +93,13 @@ func (c *UserController) UpdateById(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&updateUserRequest)
 	if err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, map[string]interface{}{"error": "Bad request"})
+		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": "Bad request"})
 		return
 	}
 
 	err = c.validator.Struct(updateUserRequest)
 	if err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, map[string]interface{}{"error": err.Error()})
+		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -120,16 +120,16 @@ func (c *UserController) UpdateById(ctx *gin.Context) {
 
 func configureErrorResponse(ctx *gin.Context, err error) {
 	if errors.Is(err, errs.BadRequestError) {
-		ctx.IndentedJSON(http.StatusBadRequest, map[string]interface{}{"error": errs.BadRequestError.Error()})
+		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": errs.BadRequestError.Error()})
 		return
 	} else if errors.Is(err, errs.NotFoundError) {
-		ctx.IndentedJSON(http.StatusNotFound, map[string]interface{}{"error": errs.NotFoundError.Error()})
+		ctx.IndentedJSON(http.StatusNotFound, map[string]string{"error": errs.NotFoundError.Error()})
 		return
 	} else if errors.Is(err, errs.EmailAlreadyInUseError) {
-		ctx.IndentedJSON(http.StatusConflict, map[string]interface{}{"error": errs.EmailAlreadyInUseError.Error()})
+		ctx.IndentedJSON(http.StatusConflict, map[string]string{"error": errs.EmailAlreadyInUseError.Error()})
 		return
 	} else if errors.Is(err, errs.ServerError) {
-		ctx.IndentedJSON(http.StatusInternalServerError, map[string]interface{}{"error": errs.ServerError.Error()})
+		ctx.IndentedJSON(http.StatusInternalServerError, map[string]string{"error": errs.ServerError.Error()})
 		return
 	}
 }
