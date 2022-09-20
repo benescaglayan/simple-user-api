@@ -11,6 +11,8 @@ services:
   user:
     container_name: user-api
     build: .
+    environment:
+      MONGO_URI: mongodb://database:27017
     ports:
       - "8080:8080"
     depends_on:
