@@ -47,14 +47,13 @@ func Test_Create_Should_Return_200_And_User_When_Nothing_Fails(t *testing.T) {
 	classUnderTest := NewUserController(userServiceMock, validator.New())
 	classUnderTest.Create(ctx)
 
-	var user model.UserDomainModel
+	var user model.UserViewModel
 	json.NewDecoder(responseRecorder.Result().Body).Decode(&user)
 
 	assert.Equal(t, ctx.Writer.Status(), 200)
 	assert.Equal(t, user.Email, domainModel.Email)
 	assert.Equal(t, user.Name, domainModel.Name)
 	userServiceMock.AssertExpectations(t)
-
 }
 
 func Test_Create_Should_Return_400_And_BadRequestError_When_Email_Is_Invalid(t *testing.T) {
@@ -135,7 +134,7 @@ func Test_GetById_Should_Return_200_And_User_When_Nothing_Fails(t *testing.T) {
 	classUnderTest := NewUserController(userServiceMock, validator.New())
 	classUnderTest.GetById(ctx)
 
-	var user model.UserDomainModel
+	var user model.UserViewModel
 	json.NewDecoder(responseRecorder.Result().Body).Decode(&user)
 
 	assert.Equal(t, ctx.Writer.Status(), 200)
@@ -345,7 +344,7 @@ func Test_UpdateById_Should_Return_200_And_User_When_Nothing_Fails(t *testing.T)
 	classUnderTest := NewUserController(userServiceMock, validator.New())
 	classUnderTest.UpdateById(ctx)
 
-	var user model.UserDomainModel
+	var user model.UserViewModel
 	json.NewDecoder(responseRecorder.Result().Body).Decode(&user)
 
 	assert.Equal(t, ctx.Writer.Status(), 200)
