@@ -25,53 +25,47 @@ func NewUserController(userService service.UserServiceInterface, validator *vali
 func (c *UserController) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	user, err := c.userService.GetById(ctx, id)
+	domainModel, err := c.userService.GetById(ctx, id)
 	if err != nil {
 		configureErrorResponse(ctx, err)
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, user)
+	ctx.IndentedJSON(http.StatusOK, copyDomainModelToViewModel(domainModel))
 }
 
 func (c *UserController) Create(ctx *gin.Context) {
-	var createUserRequest model.CreateUserViewModel
+	var createViewModel model.CreateUserViewModel
 
-	err := ctx.BindJSON(&createUserRequest)
+	err := ctx.BindJSON(&createViewModel)
 	if err != nil {
 		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": "Bad request"})
 		return
 	}
 
-	err = c.validator.Struct(createUserRequest)
+	err = c.validator.Struct(createViewModel)
 	if err != nil {
 		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
-	createUserModel := model.CreateUserDomainModel{
-		Name:     createUserRequest.Name,
-		Email:    createUserRequest.Email,
-		Password: createUserRequest.Password,
-	}
-
-	user, err := c.userService.Create(ctx, createUserModel)
+	domainModel, err := c.userService.Create(ctx, copyCreateViewModelToCreateDomainModel(&createViewModel))
 	if err != nil {
 		configureErrorResponse(ctx, err)
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, user)
+	ctx.IndentedJSON(http.StatusOK, copyDomainModelToViewModel(domainModel))
 }
 
 func (c *UserController) GetAll(ctx *gin.Context) {
-	users, err := c.userService.GetAll(ctx)
+	domainModels, err := c.userService.GetAll(ctx)
 	if err != nil {
 		configureErrorResponse(ctx, err)
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, users)
+	ctx.IndentedJSON(http.StatusOK, copyDomainModelsToViewModels(domainModels))
 }
 
 func (c *UserController) DeleteById(ctx *gin.Context) {
@@ -89,33 +83,27 @@ func (c *UserController) DeleteById(ctx *gin.Context) {
 func (c *UserController) UpdateById(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	var updateUserRequest model.UpdateUserViewModel
+	var updateViewModel model.UpdateUserViewModel
 
-	err := ctx.BindJSON(&updateUserRequest)
+	err := ctx.BindJSON(&updateViewModel)
 	if err != nil {
 		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": "Bad request"})
 		return
 	}
 
-	err = c.validator.Struct(updateUserRequest)
+	err = c.validator.Struct(updateViewModel)
 	if err != nil {
 		ctx.IndentedJSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
-	updateUserModel := model.UpdateUserDomainModel{
-		Name:     updateUserRequest.Name,
-		Email:    updateUserRequest.Email,
-		Password: updateUserRequest.Password,
-	}
-
-	user, err := c.userService.UpdateById(ctx, id, updateUserModel)
+	domainModel, err := c.userService.UpdateById(ctx, id, copyUpdateViewModelToUpdateDomainModel(&updateViewModel))
 	if err != nil {
 		configureErrorResponse(ctx, err)
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, user)
+	ctx.IndentedJSON(http.StatusOK, copyDomainModelToViewModel(domainModel))
 }
 
 func configureErrorResponse(ctx *gin.Context, err error) {
@@ -132,4 +120,42 @@ func configureErrorResponse(ctx *gin.Context, err error) {
 		ctx.IndentedJSON(http.StatusInternalServerError, map[string]string{"error": errs.ServerError.Error()})
 		return
 	}
+}
+
+func copyDomainModelToViewModel(domainModel *model.UserDomainModel) model.UserViewModel {
+	return model.UserViewModel{
+		Id:    domainModel.Id,
+		Name:  domainModel.Name,
+		Email: domainModel.Email,
+	}
+}
+
+func copyCreateViewModelToCreateDomainModel(viewModel *model.CreateUserViewModel) model.CreateUserDomainModel {
+	return model.CreateUserDomainModel{
+		Name:     viewModel.Name,
+		Email:    viewModel.Email,
+		Password: viewModel.Password,
+	}
+}
+
+func copyUpdateViewModelToUpdateDomainModel(viewModel *model.UpdateUserViewModel) model.UpdateUserDomainModel {
+	return model.UpdateUserDomainModel{
+		Name:     viewModel.Name,
+		Email:    viewModel.Email,
+		Password: viewModel.Password,
+	}
+}
+
+func copyDomainModelsToViewModels(domainModels []*model.UserDomainModel) (viewModels []model.UserViewModel) {
+	for i := 0; i < len(domainModels); i++ {
+		var viewModel model.UserViewModel
+
+		viewModel.Id = domainModels[i].Id
+		viewModel.Name = domainModels[i].Name
+		viewModel.Email = domainModels[i].Email
+
+		viewModels = append(viewModels, viewModel)
+	}
+
+	return
 }

@@ -30,14 +30,14 @@ func (_m *UserServiceInterface) GetById(ctx *gin.Context, id string) (*model.Use
 	return args.Get(0).(*model.UserDomainModel), args.Error(1)
 }
 
-func (_m *UserServiceInterface) GetAll(ctx *gin.Context) ([]*model.UserViewModel, error) {
+func (_m *UserServiceInterface) GetAll(ctx *gin.Context) ([]*model.UserDomainModel, error) {
 	args := _m.Called(ctx)
 
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 
-	return args.Get(0).([]*model.UserViewModel), args.Error(1)
+	return args.Get(0).([]*model.UserDomainModel), args.Error(1)
 }
 
 func (_m *UserServiceInterface) DeleteById(ctx *gin.Context, id string) error {
@@ -46,12 +46,12 @@ func (_m *UserServiceInterface) DeleteById(ctx *gin.Context, id string) error {
 	return args.Error(0)
 }
 
-func (_m *UserServiceInterface) UpdateById(ctx *gin.Context, id string, updateModel model.UpdateUserDomainModel) (*model.UserViewModel, error) {
+func (_m *UserServiceInterface) UpdateById(ctx *gin.Context, id string, updateModel model.UpdateUserDomainModel) (*model.UserDomainModel, error) {
 	args := _m.Called(ctx, id, updateModel)
 
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 
-	return args.Get(0).(*model.UserViewModel), args.Error(1)
+	return args.Get(0).(*model.UserDomainModel), args.Error(1)
 }

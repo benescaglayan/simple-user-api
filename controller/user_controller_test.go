@@ -211,16 +211,16 @@ func Test_GetById_Should_Return_500_When_Fetch_Operation_Fails(t *testing.T) {
 }
 
 func Test_GetAll_Should_Return_200_And_Users_When_Nothing_Fails(t *testing.T) {
-	var firstUser = model.UserViewModel{
+	var firstUser = model.UserDomainModel{
 		Id: primitive.NewObjectID().Hex(),
 	}
 
-	var secondUser = model.UserViewModel{
+	var secondUser = model.UserDomainModel{
 		Id: primitive.NewObjectID().Hex(),
 	}
 
 	userServiceMock := new(serviceMock.UserServiceInterface)
-	userServiceMock.On("GetAll", mock.Anything).Return([]*model.UserViewModel{&firstUser, &secondUser}, nil).Once()
+	userServiceMock.On("GetAll", mock.Anything).Return([]*model.UserDomainModel{&firstUser, &secondUser}, nil).Once()
 
 	responseRecorder := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(responseRecorder)
@@ -329,7 +329,7 @@ func Test_UpdateById_Should_Return_200_And_User_When_Nothing_Fails(t *testing.T)
 		Email: updateViewModel.Email,
 	}
 
-	var domainModel = model.UserViewModel{
+	var domainModel = model.UserDomainModel{
 		Email: *updateDomainModel.Email,
 	}
 
