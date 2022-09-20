@@ -18,7 +18,7 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userController := controller.NewUserController(userService, validator)
 
-	router.GET("/users", userController.GetUsers)
+	router.GET("/users", userController.GetAll)
 	router.GET("/users/:id", userController.GetById)
 	router.POST("/users", userController.Create)
 	router.PATCH("/users/:id", userController.UpdateById)
